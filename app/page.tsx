@@ -31,7 +31,7 @@ export default function Home() {
   const [text, setText] = useState("");
 
   const handleSubmit = async () => {
-    const response = await fetch("http://localhost:8000/parse", {
+    const response = await fetch("http://localhost:8000/api/match", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
