@@ -37,7 +37,7 @@ export default function Home() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text: text,
+        query_text: text,
       }),
     });
 
