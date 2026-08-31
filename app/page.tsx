@@ -1,6 +1,17 @@
 "use client";
 import { useState } from "react";
 
+interface Job {
+  company: string;
+  description: string;
+  id: string;
+  location: string;
+  posted_date: string; // TODO: parse into time?
+  skills: [string];
+  title: string;
+  url: string;
+}
+
 function UserInput({
   text,
   setText,
@@ -29,7 +40,7 @@ function UserInput({
 
 export default function Home() {
   const [text, setText] = useState("");
-  const [jobs, setJobs] = useState(null);
+  const [jobs, setJobs] = useState<Job[] | null>(null);
 
   const handleSubmit = async () => {
     const response = await fetch("http://localhost:8000/api/match", {
@@ -42,7 +53,12 @@ export default function Home() {
       }),
     });
 
-    const jobs = await response.json();
+    const data = await response.json();
+    const matches = data.matches;
+    const jobs: Job[] = [];
+    for (let i = 0; i < matches.length; i++) {
+      jobs.push(matches[i].job)
+    }
 
     console.log(jobs)
     setJobs(jobs)
@@ -74,6 +90,13 @@ export default function Home() {
             Search for jobs
           </button>
         </div>
+        {jobs?.map((job) => (
+          <div key={job.id}>
+            <h2>{job.title}</h2>
+            <p>{job.company}</p>
+            <p>{job.location}</p>
+          </div>
+        ))}
       </main>
     </div>
   );
