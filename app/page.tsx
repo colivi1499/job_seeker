@@ -30,9 +30,21 @@ function UserInput({
 export default function Home() {
   const [text, setText] = useState("");
 
-  function handleSubmit() {
-    console.log(text);
-  }
+  const handleSubmit = async () => {
+    const response = await fetch("http://localhost:8000/parse", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: text,
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log(data);
+  };
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
