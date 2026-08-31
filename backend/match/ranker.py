@@ -11,6 +11,7 @@ import numpy as np
 from backend.db import get_job, get_jobs
 from backend.match.embed_jobs import DEFAULT_EMBEDDINGS_PATH, load_embeddings
 from backend.match.embeddings import DEFAULT_MODEL_NAME, embed_query
+from backend.match.query import job_matches_excludes, prepare_query
 
 
 @dataclass
@@ -53,22 +54,25 @@ class MatchIndex:
         if not self.ids:
             return []
 
-        query_vec = embed_query(query_text, model_name=self.model_name or DEFAULT_MODEL_NAME)
+        prepared = prepare_query(query_text)
+        query_vec = embed_query(
+            query_text,
+            model_name=self.model_name or DEFAULT_MODEL_NAME,
+            embed_text=prepared.embed_text,
+        )
         # cosine == dot when both sides are L2-normalized
         scores = self.vectors @ query_vec  # (n,)
-        k = min(top_k, len(self.ids))
-        # argpartition for speed, then sort the top slice
-        if k < len(scores):
-            idx = np.argpartition(-scores, k)[:k]
-            idx = idx[np.argsort(-scores[idx])]
-        else:
-            idx = np.argsort(-scores)
+        ranked_idx = np.argsort(-scores)
 
         matches: list[dict[str, Any]] = []
-        for i in idx:
+        for i in ranked_idx:
+            if len(matches) >= top_k:
+                break
             job_id = self.ids[int(i)]
             job = self.jobs_by_id.get(job_id)
             if not job:
+                continue
+            if job_matches_excludes(job, prepared.exclude_terms):
                 continue
             matches.append({
                 "job": job,

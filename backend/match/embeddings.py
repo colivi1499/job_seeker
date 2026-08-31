@@ -20,7 +20,24 @@ def job_to_embed_text(job: dict[str, Any]) -> str:
     if len(description) > DESCRIPTION_MAX_CHARS:
         description = description[:DESCRIPTION_MAX_CHARS]
 
-    parts = [p for p in (title, company, location, description) if p]
+    skills_raw = job.get("skills") or []
+    if isinstance(skills_raw, str):
+        skills_str = skills_raw.strip()
+    else:
+        skills_str = ", ".join(str(s).strip() for s in skills_raw if s)
+
+    parts: list[str] = []
+    if title:
+        parts.extend([title, title])  # repeat title to up-weight role in the vector
+    if company:
+        parts.append(company)
+    if location:
+        parts.append(location)
+    if skills_str:
+        parts.append(f"Skills: {skills_str}")
+    if description:
+        parts.append(description)
+
     return ". ".join(parts) if parts else title or "unknown job"
 
 
@@ -62,7 +79,12 @@ def embed_query(
     query_text: str,
     *,
     model_name: str = DEFAULT_MODEL_NAME,
+    embed_text: str | None = None,
 ) -> np.ndarray:
-    """Embed a single user query → shape (d,)."""
-    text = (query_text or "").strip() or " "
+    """Embed a single user query → shape (d,). Pass embed_text to skip re-parsing."""
+    if embed_text is None:
+        from backend.match.query import prepare_query
+
+        embed_text = prepare_query(query_text).embed_text
+    text = (embed_text or "").strip() or " "
     return embed_texts([text], model_name=model_name, normalize=True)[0]
