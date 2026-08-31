@@ -49,6 +49,8 @@ venv/
 data/*.db
 data/*.db-journal
 data/cache/
+data/*.npz
+data/embeddings/
 .DS_Store
 *.egg-info/
 .pytest_cache/
