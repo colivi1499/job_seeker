@@ -56,3 +56,6 @@ data/embeddings/
 .DS_Store
 *.egg-info/
 .pytest_cache/
+
+# adzuna
+adzunaconfig.txt
