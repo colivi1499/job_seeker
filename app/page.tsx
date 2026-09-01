@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import JobCard from "@/frontend/src/components/JobCard";
+import { Job } from "@/frontend/src/types/Job";
 
 function UserInput({
   text,
@@ -79,13 +81,18 @@ export default function Home() {
             Search for jobs
           </button>
         </div>
-        {jobs?.map((job) => (
-          <div key={job.id}>
-            <h2>{job.title}</h2>
-            <p>{job.company}</p>
-            <p>{job.location}</p>
-          </div>
-        ))}
+        <div className="py-4">
+          {jobs && (
+            <div className="flex flex-col gap-4">
+              {jobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
