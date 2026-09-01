@@ -84,11 +84,16 @@ export default function Home() {
         <div className="py-4">
           {jobs && (
             <div className="flex flex-col gap-4">
-              {jobs.map((job) => (
-                <JobCard
+              {jobs.map((job, index) => (
+                <div
                   key={job.id}
-                  job={job}
-                />
+                  className="job-card-animate"
+                  style={{
+                    animationDelay: `${index * 150 + 300}ms`,
+                  }}
+                >
+                  <JobCard job={job} />
+                </div>
               ))}
             </div>
           )}

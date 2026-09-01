@@ -6,8 +6,8 @@ interface JobCardProps {
 
 export default function JobCard({ job }: JobCardProps) {
   const shortDescription =
-    job.description.length > 400
-      ? `${job.description.slice(0, 400)}...`
+    job.description.length > 300
+      ? `${job.description.slice(0, 300)}...`
       : job.description;
   return (
     <div className="rounded-lg border border-gray-300 bg-white p-6 shadow-md">
