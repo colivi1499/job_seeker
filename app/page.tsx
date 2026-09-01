@@ -4,11 +4,11 @@ import JobCard from "@/frontend/src/components/JobCard";
 import { Job } from "@/frontend/src/types/Job";
 
 function UserInput({
-  text,
+  query_text,
   setText,
 }: {
-  text: string;
-  setText: (text: string) => void;
+  query_text: string;
+  setText: (query_text: string) => void;
 }) {
   return (
     <div>
@@ -17,10 +17,9 @@ function UserInput({
         your resume, whatever):
       </label>
 
-      <input
+      <textarea
         id="user_description"
-        type="text"
-        value={text}
+        value={query_text}
         onChange={(event) => setText(event.target.value)}
         placeholder="Type here..."
         className="mt-2 w-full bg-white text-black placeholder:text-black"
@@ -30,29 +29,74 @@ function UserInput({
 }
 
 export default function Home() {
-  const [text, setText] = useState("");
+  const [query_text, setText] = useState("");
   const [jobs, setJobs] = useState<Job[] | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  
+  const extractPdf = async () => {
+    if (!file) {
+      return "";
+    }
+
+    const pdfjsLib = await import("pdfjs-dist");
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+
+    const arrayBuffer = await file.arrayBuffer();
+
+    const pdf = await pdfjsLib.getDocument({
+      data: arrayBuffer,
+    }).promise;
+
+    let pdfText = "";
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+
+      const pageText = content.items
+        .map((item) => ("str" in item ? item.str : ""))
+        .join(" ");
+
+      pdfText += pageText + "\n";
+    }
+
+    return pdfText;
+  }
 
   const handleSubmit = async () => {
+    let queryText = query_text;
+
+    if (file) {
+      let pdfText = await extractPdf();
+
+      queryText += "\n" + pdfText;
+    }
+
     const response = await fetch("http://localhost:8000/api/match", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        query_text: text,
+        query_text: queryText,
       }),
     });
 
     const data = await response.json();
-    const matches = data.matches;
-    const jobs: Job[] = [];
-    for (let i = 0; i < matches.length; i++) {
-      jobs.push(matches[i].job)
-    }
 
-    console.log(jobs)
-    setJobs(jobs)
+    if (data) {
+      const matches = data.matches;
+
+      const jobs: Job[] = [];
+
+      for (let i = 0; i < matches.length; i++) {
+        jobs.push(matches[i].job);
+      }
+
+      setJobs(jobs);
+    }
   };
 
   return (
@@ -67,7 +111,30 @@ export default function Home() {
             Welcome to job_seeker. Let's find you some jobs.
           </h1>
 
-          <UserInput text={text} setText={setText} />
+          <UserInput query_text={query_text} setText={setText} />
+
+          <input
+            type="file"
+            accept=".pdf,application/pdf"
+            onChange={(event) => {
+              setFile(event.target.files?.[0] ?? null);
+            }}
+            className="
+              text-sm text-gray-400
+              file:mr-3
+              file:px-3
+              file:py-1.5
+              file:rounded-md
+              file:border-0
+              file:bg-white
+              file:text-black
+              file:text-sm
+              file:font-medium
+              file:cursor-pointer
+              hover:file:bg-gray-200
+              file:transition-colors
+            "
+          />
 
           <button 
             className="bg-white text-black px-6 py-3 rounded-lg font-medium
@@ -77,7 +144,7 @@ export default function Home() {
              disabled:bg-gray-400 disabled:text-gray-600
              disabled:cursor-not-allowed disabled:hover:bg-gray-400"
             onClick={handleSubmit}
-            disabled={!text}>
+            disabled={!query_text && !file}>
             Search for jobs
           </button>
         </div>
