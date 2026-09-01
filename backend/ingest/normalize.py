@@ -105,3 +105,72 @@ def normalize_muse_job(raw: dict[str, Any]) -> dict[str, Any] | None:
         posted_date=raw.get("publication_date"),
         skills=deduped_skills,
     )
+
+def normalize_adzuna_job(raw: dict[str, Any]) -> dict[str, Any] | None:
+    """Map an Adzuna API job object to the canonical Job schema."""
+    adzuna_id = raw.get("id")
+    title = (raw.get("title") or "").strip()
+
+    if adzuna_id is None or not title:
+        return None
+
+    # Company
+    company_obj = raw.get("company") or {}
+    company = None
+
+    if isinstance(company_obj, dict):
+        company = company_obj.get("display_name")
+    elif isinstance(company_obj, str):
+        company = company_obj
+
+    # Location
+    location_obj = raw.get("location") or {}
+    location = None
+
+    if isinstance(location_obj, dict):
+        area = location_obj.get("area") or []
+
+        if isinstance(area, list) and len(area) >= 2:
+            state = area[1]
+            city = area[-1]
+
+            if city and state:
+                location = f"{city}, {state}"
+            elif city:
+                location = str(city)
+            elif state:
+                location = str(state)
+            else:
+                location = None
+        else:
+            location = location_obj.get("display_name")
+
+    elif isinstance(location_obj, str):
+        location = location_obj
+
+    # Salary
+    salary_min = raw.get("salary_min")
+    salary_max = raw.get("salary_max")
+
+    # Adzuna description is HTML
+    description = html_to_text(raw.get("description"))
+
+    # Adzuna's redirect URL is the application URL
+    url = raw.get("redirect_url")
+
+    # Adzuna doesn't provide a direct skills/tags field.
+    skills: list[str] = []
+
+    return empty_job(
+        id=f"adzuna-{adzuna_id}",
+        title=title,
+        company=company,
+        location=location,
+        description=description,
+        url=url,
+        source="adzuna",
+        salary_min=salary_min,
+        salary_max=salary_max,
+        posted_date=raw.get("created"),
+        skills=skills,
+    )

@@ -1,0 +1,10 @@
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 2
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 2 --query "software"
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 2 --query "AI"
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 2 --query "software intern"
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 2 --query "programming"
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 2 --query "software developer"
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 1 --query "software engineer"
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 1 --query "data science"
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 1 --query "math"
+python -m backend.ingest.run --pages 20 --location "Utah" --sleep 1 --query "computer"
