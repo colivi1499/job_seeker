@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import backend.env  # noqa: F401 — load .env before other backend imports
+
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -67,10 +69,13 @@ app.add_middleware(
 
 @app.get("/health")
 def health() -> dict[str, Any]:
+    import os
+
     return {
         "ok": True,
         "index_loaded": _index is not None,
         "n_jobs": len(_index.ids) if _index else 0,
+        "llm_query_parse": bool(os.environ.get("OPENAI_API_KEY", "").strip()),
     }
 
 
