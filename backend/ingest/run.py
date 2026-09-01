@@ -1,4 +1,4 @@
-"""CLI: init SQLite and ingest jobs from The Muse API."""
+"""CLI: init SQLite and ingest jobs from the Adzuna API."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from backend.ingest.normalize import normalize_adzuna_job
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Initialize SQLite and ingest jobs from The Muse API.",
+        description="Initialize SQLite and ingest jobs from the Adzuna API.",
     )
     parser.add_argument(
         "--db",
@@ -60,7 +60,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=os.environ.get("ADZUNA_APP_KEY"),
         help="Adzuna application key (or set ADZUNA_APP_KEY).",
     )
-    parser.add_argument("--location", default=None, help="Optional Muse location filter.")
+    parser.add_argument(
+        "--location",
+        default=None,
+        help="Optional Adzuna location filter (e.g. 'Utah', 'New York').",
+    )
     parser.add_argument(
         "--no-cache",
         action="store_true",
